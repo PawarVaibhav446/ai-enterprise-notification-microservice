@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: notification-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: notification_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - notification-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: notification-rabbitmq
+    ports:
+      - "5672:5672"    # RabbitMQ main port
+      - "15672:15672"  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - notification-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:
+  rabbitmq_data:
+
+networks:
+  notification-network:
+    driver: bridge

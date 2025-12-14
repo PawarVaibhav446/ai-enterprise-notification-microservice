@@ -1,0 +1,83 @@
+spring:
+  application:
+    name: ai-notification-service
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: notification_db
+      auto-index-creation: true
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin123
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 3000
+          max-attempts: 3
+          multiplier: 2
+
+  # Cache Configuration
+  cache:
+    type: simple
+    cache-names:
+      - aiMessages
+      - promptTemplates
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+
+# Groq API Configuration (FREE)
+groq:
+  api:
+    key:
+    url: https://api.groq.com/openai/v1/chat/completions
+    model: llama-3.1-8b-instant
+
+# RabbitMQ Queue Names
+rabbitmq:
+  queues:
+    notification: notification.queue
+    retry: notification.retry.queue
+    dead-letter: notification.dlq
+  exchanges:
+    notification: notification.exchange
+    retry: notification.retry.exchange
+  routing-keys:
+    notification: notification.routing
+    retry: notification.retry.routing
+
+# Retry Configuration
+retry:
+  max-attempts: 3
+  initial-delay: 2000
+  multiplier: 2
+
+# Logging
+logging:
+  level:
+    com.notification: DEBUG
+    org.springframework.amqp: INFO
+    org.springframework.data.mongodb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
