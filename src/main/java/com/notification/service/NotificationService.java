@@ -22,6 +22,9 @@ public class NotificationService {
     private final AiMessageService aiMessageService;
     private final RetryProducer retryProducer;
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
+    private final SmsService smsService;
+    private final WhatsAppService whatsAppService;
 
     /**
      * Main method to send notifications
@@ -130,7 +133,7 @@ public class NotificationService {
     }
 
     /**
-     * Route to appropriate channel (Email/SMS/WhatsApp)
+     * Route to appropriate channel using dedicated services
      */
     private boolean sendViaChannel(NotificationRequest.NotificationType type,
                                    String to,
@@ -138,41 +141,9 @@ public class NotificationService {
                                    String body) {
 
         return switch (type) {
-            case EMAIL -> {
-                log.info("📧 Sending EMAIL to: {}", to);
-                log.info("   Subject: {}", subject);
-                log.info("   Body: {}", body);
-                // emailService.send(to, subject, body);
-
-                // Simulate random failure for testing retry (20% failure rate)
-                boolean success = Math.random() > 0.2;
-                if (!success) {
-                    log.warn("❌ Email send failed (simulated)");
-                }
-                yield success;
-            }
-            case SMS -> {
-                log.info("📱 Sending SMS to: {}", to);
-                log.info("   Message: {}", body);
-                // smsService.send(to, body);
-
-                boolean success = Math.random() > 0.2;
-                if (!success) {
-                    log.warn("❌ SMS send failed (simulated)");
-                }
-                yield success;
-            }
-            case WHATSAPP -> {
-                log.info("💬 Sending WhatsApp to: {}", to);
-                log.info("   Message: {}", body);
-                // whatsAppService.send(to, body);
-
-                boolean success = Math.random() > 0.2;
-                if (!success) {
-                    log.warn("❌ WhatsApp send failed (simulated)");
-                }
-                yield success;
-            }
+            case EMAIL -> emailService.send(to, subject, body);
+            case SMS -> smsService.send(to, body);
+            case WHATSAPP -> whatsAppService.send(to, body);
         };
     }
 }
